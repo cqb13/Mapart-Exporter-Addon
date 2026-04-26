@@ -32,7 +32,7 @@ jobs:
 
           TAG_NAME="build-${RUN_NUMBER}"
           RELEASE_NAME="Release ${RUN_NUMBER}"
-          JAR_NAME="mod-jar-name-${RUN_NUMBER}.jar"
+          JAR_NAME="mapart-exporter-${RUN_NUMBER}.jar"
 
           echo "tag=$TAG_NAME" >> "$GITHUB_OUTPUT"
           echo "release_name=$RELEASE_NAME" >> "$GITHUB_OUTPUT"
