@@ -29,15 +29,14 @@ jobs:
         run: |
           FILE=gradle/libs.versions.toml
 
-          VERSION=$(grep '^mod-version' "$FILE" | sed -E 's/.*"([^"]+)".*/\1/')
-          MC_VERSION=$(grep '^minecraft' "$FILE" | sed -E 's/.*"([^"]+)".*/\1/')
+          VERSION=$(awk -F'"' '/^[versions]/ {flag=1; next} /^[/ {flag=0} flag && /^mod-version/ {print $2}' "$FILE")
+          MC_VERSION=$(awk -F'"' '/^[versions]/ {flag=1; next} /^[/ {flag=0} flag && /^minecraft[[:space:]]*=/ {print $2}' "$FILE")
 
           TAG_NAME="mc${MC_VERSION}-v${VERSION}"
           RELEASE_NAME="${MC_VERSION}-${VERSION} build"
 
           echo "tag=$TAG_NAME" >> "$GITHUB_OUTPUT"
           echo "release_name=$RELEASE_NAME" >> "$GITHUB_OUTPUT"
-      - name: Create Git Tag
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
