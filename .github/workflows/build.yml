@@ -24,24 +24,24 @@ jobs:
         with:
           java-version: 21
           distribution: corretto
-      - name: Read version from libs.versions.toml
+      - name: Set version info
         id: version
         run: |
-          FILE=gradle/libs.versions.toml
+          COMMIT_SHORT=$(git rev-parse --short HEAD)
+          RUN_NUMBER=${{ github.run_number }}
 
-          VERSION=$(awk -F'"' '/^[versions]/ {flag=1; next} /^[/ {flag=0} flag && /^mod-version/ {print $2}' "$FILE")
-          MC_VERSION=$(awk -F'"' '/^[versions]/ {flag=1; next} /^[/ {flag=0} flag && /^minecraft[[:space:]]*=/ {print $2}' "$FILE")
-
-          TAG_NAME="mc${MC_VERSION}-v${VERSION}"
-          RELEASE_NAME="${MC_VERSION}-${VERSION} build"
+          TAG_NAME="build-${RUN_NUMBER}"
+          RELEASE_NAME="Release ${RUN_NUMBER}"
+          JAR_NAME="mod-jar-name-${RUN_NUMBER}.jar"
 
           echo "tag=$TAG_NAME" >> "$GITHUB_OUTPUT"
           echo "release_name=$RELEASE_NAME" >> "$GITHUB_OUTPUT"
+          echo "jar_name=$JAR_NAME" >> "$GITHUB_OUTPUT"
       - name: Create Git Tag
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a ${{ steps.version.outputs.tag }} -m "Release ${{ steps.version.outputs.release_name }}"
+          git tag -a ${{ steps.version.outputs.tag }} -m "${{ steps.version.outputs.release_name }}"
           git push origin ${{ steps.version.outputs.tag }}
       - name: Grant execute permissions to gradlew
         run: chmod +x ./gradlew
@@ -49,12 +49,15 @@ jobs:
         run: ./gradlew build
       - name: Remove *-dev.jar
         run: rm ./build/libs/*-dev.jar || true
+      - name: Rename jar
+        run: |
+          FILE=$(ls build/libs/*.jar | head -n 1)
+          mv "$FILE" "build/libs/${{ steps.version.outputs.jar_name }}"
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.tag }}
-          name: "${{ steps.version.outputs.release_name }} ${{ github.run_number }}"
+          name: ${{ steps.version.outputs.release_name }}
           files: build/libs/*.jar
-          make_latest: ${{ env.MAKE_LATEST }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
