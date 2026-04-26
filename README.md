@@ -36,4 +36,4 @@ Exports maps in your inventory as a single image
 
 Exports the map held in your hand
 
-1. Run the `.export-mand` command
+1. Run the `.export-hand` command
