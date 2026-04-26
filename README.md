@@ -37,3 +37,13 @@ Exports maps in your inventory as a single image
 Exports the map held in your hand
 
 1. Run the `.export-hand` command
+
+## Showcase
+
+Selection:
+<img width="3420" height="2138" alt="image" src="https://github.com/user-attachments/assets/354fcb68-0652-492d-b951-790db7bb61f3" />
+
+Export Result:
+<img width="640" height="512" alt="ruins" src="https://github.com/user-attachments/assets/03830012-b479-4454-a717-594be138c661" />
+
+
