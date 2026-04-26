@@ -2,6 +2,7 @@ package dev.cqb13.MapartExporter;
 
 import com.mojang.logging.LogUtils;
 
+import dev.cqb13.MapartExporter.commands.HandMapExport;
 import dev.cqb13.MapartExporter.commands.InventoryMapExport;
 import dev.cqb13.MapartExporter.commands.LinkedInventoryMapExport;
 import meteordevelopment.meteorclient.addons.GithubRepo;
@@ -21,6 +22,7 @@ public class MapartExporter extends MeteorAddon {
     public void onInitialize() {
         LOG.info("Initializing Mapart Exporter");
 
+        Commands.add(new HandMapExport());
         Commands.add(new InventoryMapExport());
         Commands.add(new LinkedInventoryMapExport());
 
