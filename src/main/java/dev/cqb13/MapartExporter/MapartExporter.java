@@ -2,12 +2,16 @@ package dev.cqb13.MapartExporter;
 
 import com.mojang.logging.LogUtils;
 
+import dev.cqb13.MapartExporter.commands.ExportSelectedMaps;
+import dev.cqb13.MapartExporter.commands.ExportSelectedMap;
 import dev.cqb13.MapartExporter.commands.HandMapExport;
 import dev.cqb13.MapartExporter.commands.InventoryMapExport;
 import dev.cqb13.MapartExporter.commands.LinkedInventoryMapExport;
+import dev.cqb13.MapartExporter.modules.MapartSelector;
 import meteordevelopment.meteorclient.addons.GithubRepo;
 import meteordevelopment.meteorclient.addons.MeteorAddon;
 import meteordevelopment.meteorclient.commands.Commands;
+import meteordevelopment.meteorclient.systems.modules.Modules;
 import net.fabricmc.loader.api.FabricLoader;
 
 import java.nio.file.Path;
@@ -25,6 +29,10 @@ public class MapartExporter extends MeteorAddon {
         Commands.add(new HandMapExport());
         Commands.add(new InventoryMapExport());
         Commands.add(new LinkedInventoryMapExport());
+        Commands.add(new ExportSelectedMap());
+        Commands.add(new ExportSelectedMaps());
+
+        Modules.get().add(new MapartSelector());
 
         LOG.info("Initialized Mapart Exporter");
     }

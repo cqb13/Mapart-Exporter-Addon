@@ -42,7 +42,7 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 
-public class MapartExporter extends Module {
+public class MapartSelector extends Module {
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
     private final SettingGroup sgColors = settings.createGroup("Colors");
 
@@ -101,9 +101,9 @@ public class MapartExporter extends Module {
     private final Map<Integer, SelectedMapEntry> selectedMaps = new LinkedHashMap<>();
     private Map<Integer, int[]> gridCoordsCache = null;
 
-    public MapartExporter() {
-        super(Categories.Misc, "mapart-exporter",
-                "Middle-click maps in item frames to select them, then run .export-selected <name> to export.");
+    public MapartSelector() {
+        super(Categories.Misc, "mapart-selector",
+                "Middle-click maps in item frames to select them, then use the .export-selected-map/s commands");
     }
 
     @Override

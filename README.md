@@ -15,7 +15,7 @@ Exports all the maps you have selected as either a single image or a set of indi
     - _Note: If exporting connected maps only select maps part of the mapart_
 3. Export
    a. If you are exporting 1x1 mapart run the `.export-selected-maps` command
-   b. If you are exporting mapart with larger dimensions run the `.export-selected-map [map-name]` command
+   b. If you are exporting mapart with larger dimensions run the `.export-selected [map-name]` command
 
 ### Inventory Map Export
 

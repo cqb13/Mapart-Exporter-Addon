@@ -10,8 +10,6 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import dev.cqb13.MapartExporter.ExportUtils;
 import meteordevelopment.meteorclient.commands.Command;
 import meteordevelopment.meteorclient.utils.player.ChatUtils;
-import net.minecraft.block.MapColor;
-import net.minecraft.client.texture.NativeImage;
 import net.minecraft.command.CommandSource;
 import net.minecraft.item.FilledMapItem;
 import net.minecraft.item.ItemStack;
@@ -79,65 +77,10 @@ public class LinkedInventoryMapExport extends Command {
                         return 0;
                     }
 
-                    int firstRow = Integer.MAX_VALUE;
-                    int firstColInFirstRow = Integer.MAX_VALUE;
-                    for (String key : maps.keySet()) {
-                        String[] parts = key.split(",");
-                        int r = Integer.parseInt(parts[0]);
-                        int c = Integer.parseInt(parts[1]);
-
-                        if (r < firstRow) {
-                            firstRow = r;
-                            firstColInFirstRow = c;
-                        } else if (r == firstRow && c < firstColInFirstRow) {
-                            firstColInFirstRow = c;
-                        }
-                    }
-
-                    boolean anyBeforeFirst = false;
-                    for (String key : maps.keySet()) {
-                        String[] parts = key.split(",");
-                        int r = Integer.parseInt(parts[0]);
-                        int c = Integer.parseInt(parts[1]);
-                        if (r < firstRow || (r == firstRow && c < firstColInFirstRow)) {
-                            anyBeforeFirst = true;
-                            break;
-                        }
-                    }
-
-                    int originRow = anyBeforeFirst ? minRow : firstRow;
-                    int originCol = anyBeforeFirst ? minCol : firstColInFirstRow;
-
-                    int usedCols = maxCol - originCol + 1;
-                    int usedRows = maxRow - originRow + 1;
-
-                    NativeImage finalImage = new NativeImage(usedCols * 128, usedRows * 128, true);
-
-                    for (int r = originRow; r <= maxRow; r++) {
-                        for (int c = originCol; c <= maxCol; c++) {
-                            byte[] colors = maps.get(r + "," + c);
-
-                            for (int i = 0; i < 128 * 128; i++) {
-                                int x = i % 128;
-                                int y = i / 128;
-
-                                int globalX = (c - originCol) * 128 + x;
-                                int globalY = (r - originRow) * 128 + y;
-
-                                if (colors != null) {
-                                    int color = MapColor.getRenderColor(colors[i]);
-                                    finalImage.setColorArgb(globalX, globalY, color);
-                                } else {
-                                    finalImage.setColorArgb(globalX, globalY, 0x00000000);
-                                }
-                            }
-                        }
-                    }
-
                     try {
-                        ExportUtils.saveImage(baseName, finalImage, true);
+                        ExportUtils.saveCompositeImage(baseName, maps, true);
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        ChatUtils.sendMsg(Formatting.RED, "Failed to save export: " + e.getMessage());
                         return 0;
                     }
 
