@@ -28,7 +28,7 @@ public class ExportUtils {
         return sanitized;
     }
 
-    private static String randomDigits(int length) {
+    public static String randomDigits(int length) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < length; i++) {
             sb.append(RANDOM.nextInt(10));
@@ -42,9 +42,8 @@ public class ExportUtils {
                 image.setColorArgb(i % 128, i / 128, MapColor.getRenderColor(mapColors[i]));
             }
             saveImage(filename, image, log);
-        } catch (Exception e) {
+        } catch (IOException e) {
             MapartExporter.LOG.error("Error saving map:\n{}", e.toString());
-            throw new RuntimeException(e);
         }
     }
 

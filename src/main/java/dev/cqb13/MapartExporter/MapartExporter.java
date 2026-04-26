@@ -1,8 +1,12 @@
 package dev.cqb13.MapartExporter;
 
 import com.mojang.logging.LogUtils;
+
+import dev.cqb13.MapartExporter.commands.InventoryMapExport;
+import dev.cqb13.MapartExporter.commands.LinkedInventoryMapExport;
 import meteordevelopment.meteorclient.addons.GithubRepo;
 import meteordevelopment.meteorclient.addons.MeteorAddon;
+import meteordevelopment.meteorclient.commands.Commands;
 import net.fabricmc.loader.api.FabricLoader;
 
 import java.nio.file.Path;
@@ -16,6 +20,9 @@ public class MapartExporter extends MeteorAddon {
     @Override
     public void onInitialize() {
         LOG.info("Initializing Mapart Exporter");
+
+        Commands.add(new InventoryMapExport());
+        Commands.add(new LinkedInventoryMapExport());
 
         LOG.info("Initialized Mapart Exporter");
     }

@@ -32,10 +32,10 @@ public class LinkedInventoryMapExport extends Command {
                         return 0;
                     }
 
-                    final int cols = 9;
-                    final int rows = 4;
-
                     Map<String, byte[]> maps = new HashMap<>();
+
+                    int minCol = 9, maxCol = -1;
+                    int minRow = 4, maxRow = -1;
 
                     for (int slot = 0; slot < 36; slot++) {
                         ItemStack stack = mc.player.getInventory().getStack(slot);
@@ -63,20 +63,66 @@ public class LinkedInventoryMapExport extends Command {
                         }
 
                         maps.put(row + "," + col, mapState.colors.clone());
+
+                        if (col < minCol)
+                            minCol = col;
+                        if (col > maxCol)
+                            maxCol = col;
+                        if (row < minRow)
+                            minRow = row;
+                        if (row > maxRow)
+                            maxRow = row;
                     }
 
-                    NativeImage finalImage = new NativeImage(cols * 128, rows * 128, true);
+                    if (maps.isEmpty()) {
+                        ChatUtils.sendMsg(Formatting.RED, "No maps found in inventory.");
+                        return 0;
+                    }
 
-                    for (int r = 0; r < rows; r++) {
-                        for (int c = 0; c < cols; c++) {
+                    int firstRow = Integer.MAX_VALUE;
+                    int firstColInFirstRow = Integer.MAX_VALUE;
+                    for (String key : maps.keySet()) {
+                        String[] parts = key.split(",");
+                        int r = Integer.parseInt(parts[0]);
+                        int c = Integer.parseInt(parts[1]);
+
+                        if (r < firstRow) {
+                            firstRow = r;
+                            firstColInFirstRow = c;
+                        } else if (r == firstRow && c < firstColInFirstRow) {
+                            firstColInFirstRow = c;
+                        }
+                    }
+
+                    boolean anyBeforeFirst = false;
+                    for (String key : maps.keySet()) {
+                        String[] parts = key.split(",");
+                        int r = Integer.parseInt(parts[0]);
+                        int c = Integer.parseInt(parts[1]);
+                        if (r < firstRow || (r == firstRow && c < firstColInFirstRow)) {
+                            anyBeforeFirst = true;
+                            break;
+                        }
+                    }
+
+                    int originRow = anyBeforeFirst ? minRow : firstRow;
+                    int originCol = anyBeforeFirst ? minCol : firstColInFirstRow;
+
+                    int usedCols = maxCol - originCol + 1;
+                    int usedRows = maxRow - originRow + 1;
+
+                    NativeImage finalImage = new NativeImage(usedCols * 128, usedRows * 128, true);
+
+                    for (int r = originRow; r <= maxRow; r++) {
+                        for (int c = originCol; c <= maxCol; c++) {
                             byte[] colors = maps.get(r + "," + c);
 
                             for (int i = 0; i < 128 * 128; i++) {
                                 int x = i % 128;
                                 int y = i / 128;
 
-                                int globalX = c * 128 + x;
-                                int globalY = r * 128 + y;
+                                int globalX = (c - originCol) * 128 + x;
+                                int globalY = (r - originRow) * 128 + y;
 
                                 if (colors != null) {
                                     int color = MapColor.getRenderColor(colors[i]);
