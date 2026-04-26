@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "mapart-exporter",
+  "version": "${version}",
+  "name": "Mapart Exporter",
+  "description": "Easily save mapart as pngs",
+  "authors": ["cqb13"],
+  "contact": {
+    "sources": "https://github.com/cqb13/mapart-exporter"
+  },
+  "icon": "assets/template/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "meteor": ["dev.cqb13.MapartExporter.MapartExporter"]
+  },
+  "mixins": ["mapart-exporter.mixins.json"],
+  "custom": {
+    "meteor-client:color": "73,107,190",
+    "modmenu": {
+      "parent": {
+        "id": "meteor-client"
+      }
+    }
+  },
+  "depends": {
+    "java": ">=21",
+    "minecraft": ["${mc_version}"],
+    "meteor-client": "*"
+  }
+}
