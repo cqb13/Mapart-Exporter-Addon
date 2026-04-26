@@ -8,7 +8,7 @@
   "contact": {
     "sources": "https://github.com/cqb13/mapart-exporter"
   },
-  "icon": "assets/template/icon.png",
+  "icon": "assets/icon.png",
   "environment": "client",
   "entrypoints": {
     "meteor": ["dev.cqb13.MapartExporter.MapartExporter"]
