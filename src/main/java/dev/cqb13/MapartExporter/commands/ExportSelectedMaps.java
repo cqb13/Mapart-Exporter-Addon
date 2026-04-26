@@ -19,7 +19,7 @@ import net.minecraft.util.Formatting;
 
 public class ExportSelectedMaps extends Command {
     public ExportSelectedMaps() {
-        super("export-selected-maps", "Exports each map selected via the Map Exporter module individually");
+        super("export-selected-maps", "Exports each map selected via the Mapart Selector module individually");
     }
 
     @Override
@@ -29,7 +29,7 @@ public class ExportSelectedMaps extends Command {
 
             MapartSelector module = Modules.get().get(MapartSelector.class);
             if (module == null || !module.isActive()) {
-                ChatUtils.sendMsg(Formatting.RED, "Map Exporter module is not enabled.");
+                ChatUtils.sendMsg(Formatting.RED, "Mapart Selector module is not enabled.");
                 return 0;
             }
 

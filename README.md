@@ -12,7 +12,7 @@ Maps are saved to the `saved_maps` directory in the `.minecraft` folder
 
 Exports all the maps you have selected as either a single image or a set of individual images
 
-1. Turn on the `Map Exporter` module
+1. Turn on the `Mapart Selector` module
 2. Middle click the maps you want to export
     - _Note: If exporting connected maps only select maps part of the mapart_
 3. Export
