@@ -6,13 +6,14 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.Random;
 
+import com.mojang.blaze3d.platform.NativeImage;
+
 import meteordevelopment.meteorclient.utils.player.ChatUtils;
-import net.minecraft.block.MapColor;
-import net.minecraft.client.texture.NativeImage;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.HoverEvent;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.world.level.material.MapColor;
 
 public class ExportUtils {
     private final static Random RANDOM = new Random();
@@ -40,7 +41,7 @@ public class ExportUtils {
     public static void saveImageFromMapColors(byte[] mapColors, String filename, boolean log) {
         try (NativeImage image = new NativeImage(128, 128, false)) {
             for (int i = 0; i < mapColors.length; i++) {
-                image.setColorArgb(i % 128, i / 128, MapColor.getRenderColor(mapColors[i]));
+                image.setPixel(i % 128, i / 128, MapColor.getColorFromPackedId(mapColors[i]));
             }
             saveImage(filename, image, log);
         } catch (IOException e) {
@@ -124,10 +125,10 @@ public class ExportUtils {
                     int globalY = (row - originRow) * 128 + y;
 
                     if (colors != null) {
-                        int color = MapColor.getRenderColor(colors[i]);
-                        finalImage.setColorArgb(globalX, globalY, color);
+                        int color = MapColor.getColorFromPackedId(colors[i]);
+                        finalImage.setPixel(globalX, globalY, color);
                     } else {
-                        finalImage.setColorArgb(globalX, globalY, 0x00000000);
+                        finalImage.setPixel(globalX, globalY, 0x00000000);
                     }
                 }
             }
@@ -156,17 +157,17 @@ public class ExportUtils {
         }
 
         Path filePath = MapartExporter.EXPORT_DIRECTORY.resolve(filename);
-        image.writeTo(filePath);
+        image.writeToFile(filePath);
 
         if (!log)
             return;
 
-        Text mapartFile = Text.literal(filename)
-                .styled(style -> style
-                        .withColor(Formatting.GREEN)
+        Component mapartFile = Component.literal(filename)
+                .withStyle(style -> style
+                        .withColor(ChatFormatting.GREEN)
                         .withClickEvent(new ClickEvent.OpenFile(filePath.toAbsolutePath().toString()))
-                        .withHoverEvent(new HoverEvent.ShowText(Text.literal("Open saved image")))
-                        .withUnderline(true));
+                        .withHoverEvent(new HoverEvent.ShowText(Component.literal("Open saved image")))
+                        .withUnderlined(true));
 
         ChatUtils.sendMsg(mapartFile);
     }

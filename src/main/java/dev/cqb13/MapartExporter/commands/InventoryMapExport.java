@@ -5,11 +5,11 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import dev.cqb13.MapartExporter.ExportUtils;
 import meteordevelopment.meteorclient.commands.Command;
 import meteordevelopment.meteorclient.utils.player.ChatUtils;
-import net.minecraft.command.CommandSource;
-import net.minecraft.item.FilledMapItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.map.MapState;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.multiplayer.ClientSuggestionProvider;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.MapItem;
+import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 
 public class InventoryMapExport extends Command {
     public InventoryMapExport() {
@@ -17,7 +17,7 @@ public class InventoryMapExport extends Command {
     }
 
     @Override
-    public void build(LiteralArgumentBuilder<CommandSource> builder) {
+    public void build(LiteralArgumentBuilder<ClientSuggestionProvider> builder) {
         builder.executes(context -> {
             if (mc.player == null) {
                 return 0;
@@ -25,18 +25,18 @@ public class InventoryMapExport extends Command {
 
             int count = 0;
 
-            for (ItemStack stack : mc.player.getInventory().getMainStacks()) {
-                if (!(stack.getItem() instanceof FilledMapItem)) {
+            for (ItemStack stack : mc.player.getInventory().getNonEquipmentItems()) {
+                if (!(stack.getItem() instanceof MapItem)) {
                     continue;
                 }
 
-                MapState mapState = FilledMapItem.getMapState(stack, mc.player.getEntityWorld());
+                MapItemSavedData mapState = MapItem.getSavedData(stack, mc.player.level());
                 if (mapState == null)
                     continue;
 
                 byte[] mapColors = mapState.colors.clone();
 
-                String rawName = stack.getName().getString();
+                String rawName = stack.getHoverName().getString();
                 String filename = ExportUtils.sanitizeMapName(rawName);
 
                 try {
@@ -46,12 +46,12 @@ public class InventoryMapExport extends Command {
                     try {
                         ExportUtils.saveImageFromMapColors(mapColors, filename + ExportUtils.randomDigits(10), true);
                     } catch (Exception e) {
-                        ChatUtils.sendMsg(Formatting.RED, "Failed to save map: " + e.getMessage());
+                        ChatUtils.sendMsg(ChatFormatting.RED, "Failed to save map: " + e.getMessage());
                     }
                 }
             }
 
-            ChatUtils.sendMsg(Formatting.GREEN, "Exported " + count + " maps.");
+            ChatUtils.sendMsg(ChatFormatting.GREEN, "Exported " + count + " maps.");
             return SINGLE_SUCCESS;
         });
     }

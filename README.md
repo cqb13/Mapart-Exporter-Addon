@@ -45,5 +45,3 @@ Selection:
 
 Export Result:
 <img width="640" height="512" alt="ruins" src="https://github.com/user-attachments/assets/03830012-b479-4454-a717-594be138c661" />
-
-

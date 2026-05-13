@@ -31,16 +31,16 @@ import meteordevelopment.meteorclient.utils.render.NametagUtils;
 import meteordevelopment.meteorclient.utils.render.color.Color;
 import meteordevelopment.meteorclient.utils.render.color.SettingColor;
 import meteordevelopment.orbit.EventHandler;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.MapIdComponent;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.decoration.ItemFrameEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.decoration.ItemFrame;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.saveddata.maps.MapId;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
 
 public class MapartSelector extends Module {
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
@@ -129,21 +129,21 @@ public class MapartSelector extends Module {
 
     @EventHandler
     private void onMouseClick(MouseClickEvent event) {
-        if (event.action != KeyAction.Press || event.button() != GLFW_MOUSE_BUTTON_MIDDLE || mc.currentScreen != null) {
+        if (event.action != KeyAction.Press || event.button() != GLFW_MOUSE_BUTTON_MIDDLE || mc.screen != null) {
             return;
         }
 
-        HitResult hitResult = mc.crosshairTarget;
+        HitResult hitResult = mc.hitResult;
         if (!(hitResult instanceof EntityHitResult ehr)) {
             return;
         }
 
         Entity entity = ehr.getEntity();
-        if (!(entity instanceof ItemFrameEntity frame)) {
+        if (!(entity instanceof ItemFrame frame)) {
             return;
         }
 
-        ItemStack stack = frame.getHeldItemStack();
+        ItemStack stack = frame.getItem();
         if (stack.isEmpty() || stack.getItem() != Items.FILLED_MAP) {
             return;
         }
@@ -158,33 +158,33 @@ public class MapartSelector extends Module {
             gridCoordsCache = null;
 
             if (this.chatFeedback) {
-                info("Deselected map " + stack.getName().getString() + " (" + selectedMaps.size() + " selected)");
+                info("Deselected map " + stack.getHoverName().getString() + " (" + selectedMaps.size() + " selected)");
             }
         } else {
-            selectedMaps.put(mapId, new SelectedMapEntry(mapId, stack.getName().getString(), frame));
+            selectedMaps.put(mapId, new SelectedMapEntry(mapId, stack.getHoverName().getString(), frame));
             gridCoordsCache = null;
 
             if (this.chatFeedback) {
-                info("Selected map " + stack.getName().getString() + " (" + selectedMaps.size() + " selected)");
+                info("Selected map " + stack.getHoverName().getString() + " (" + selectedMaps.size() + " selected)");
             }
         }
     }
 
     @EventHandler
     private void onRender3D(Render3DEvent event) {
-        if (!renderSelected.get() || mc.world == null || selectedMaps.isEmpty()) {
+        if (!renderSelected.get() || mc.level == null || selectedMaps.isEmpty()) {
             return;
         }
 
         Color fill = new Color(selectedSideColor.get());
         Color outline = new Color(selectedLineColor.get());
 
-        for (Entity entity : mc.world.getEntities()) {
-            if (!(entity instanceof ItemFrameEntity frame)) {
+        for (Entity entity : mc.level.entitiesForRendering()) {
+            if (!(entity instanceof ItemFrame frame)) {
                 continue;
             }
 
-            ItemStack stack = frame.getHeldItemStack();
+            ItemStack stack = frame.getItem();
             if (stack.isEmpty() || stack.getItem() != Items.FILLED_MAP) {
                 continue;
             }
@@ -194,25 +194,25 @@ public class MapartSelector extends Module {
                 continue;
             }
 
-            Box box = frame.getBoundingBox();
+            AABB box = frame.getBoundingBox();
             event.renderer.box(box, fill, outline, shapeMode.get(), 0);
         }
     }
 
     @EventHandler
     private void onRender2D(Render2DEvent event) {
-        if ((!showCoords.get() && !showName.get()) || mc.world == null || selectedMaps.isEmpty()) {
+        if ((!showCoords.get() && !showName.get()) || mc.level == null || selectedMaps.isEmpty()) {
             return;
         }
 
         Map<Integer, int[]> gridCoords = getGridCoords();
 
-        for (Entity entity : mc.world.getEntities()) {
-            if (!(entity instanceof ItemFrameEntity frame)) {
+        for (Entity entity : mc.level.entitiesForRendering()) {
+            if (!(entity instanceof ItemFrame frame)) {
                 continue;
             }
 
-            ItemStack stack = frame.getHeldItemStack();
+            ItemStack stack = frame.getItem();
             if (stack.isEmpty() || stack.getItem() != Items.FILLED_MAP) {
                 continue;
             }
@@ -286,7 +286,7 @@ public class MapartSelector extends Module {
             BlockPos pos = entry.framePos;
             int col, row;
 
-            switch (entry.frame.getFacing()) {
+            switch (entry.frame.getNearestViewDirection()) {
                 case EAST -> {
                     col = -pos.getZ();
                     row = -pos.getY();
@@ -328,10 +328,10 @@ public class MapartSelector extends Module {
     }
 
     private int getMapId(ItemStack stack) {
-        if (mc.world == null || stack == null || stack.getItem() != Items.FILLED_MAP)
+        if (mc.level == null || stack == null || stack.getItem() != Items.FILLED_MAP)
             return -1;
         try {
-            MapIdComponent mapId = stack.get(DataComponentTypes.MAP_ID);
+            MapId mapId = stack.get(DataComponents.MAP_ID);
             return mapId != null ? mapId.id() : -1;
         } catch (Exception e) {
             return -1;
@@ -341,14 +341,14 @@ public class MapartSelector extends Module {
     public static class SelectedMapEntry {
         public final int mapId;
         public final String name;
-        public final ItemFrameEntity frame;
+        public final ItemFrame frame;
         public final BlockPos framePos;
 
-        SelectedMapEntry(int mapId, String name, ItemFrameEntity frame) {
+        SelectedMapEntry(int mapId, String name, ItemFrame frame) {
             this.mapId = mapId;
             this.name = name;
             this.frame = frame;
-            this.framePos = frame.getBlockPos();
+            this.framePos = frame.blockPosition();
         }
     }
 }

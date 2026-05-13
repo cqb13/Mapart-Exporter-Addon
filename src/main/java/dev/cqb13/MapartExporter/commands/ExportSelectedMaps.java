@@ -12,10 +12,10 @@ import dev.cqb13.MapartExporter.modules.MapartSelector.SelectedMapEntry;
 import meteordevelopment.meteorclient.commands.Command;
 import meteordevelopment.meteorclient.systems.modules.Modules;
 import meteordevelopment.meteorclient.utils.player.ChatUtils;
-import net.minecraft.command.CommandSource;
-import net.minecraft.item.FilledMapItem;
-import net.minecraft.item.map.MapState;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.multiplayer.ClientSuggestionProvider;
+import net.minecraft.world.item.MapItem;
+import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 
 public class ExportSelectedMaps extends Command {
     public ExportSelectedMaps() {
@@ -23,19 +23,19 @@ public class ExportSelectedMaps extends Command {
     }
 
     @Override
-    public void build(LiteralArgumentBuilder<CommandSource> builder) {
+    public void build(LiteralArgumentBuilder<ClientSuggestionProvider> builder) {
         builder.executes(context -> {
             String baseName = "Map";
 
             MapartSelector module = Modules.get().get(MapartSelector.class);
             if (module == null || !module.isActive()) {
-                ChatUtils.sendMsg(Formatting.RED, "Mapart Selector module is not enabled.");
+                ChatUtils.sendMsg(ChatFormatting.RED, "Mapart Selector module is not enabled.");
                 return 0;
             }
 
             Map<Integer, SelectedMapEntry> selected = module.getSelectedMaps();
             if (selected.isEmpty()) {
-                ChatUtils.sendMsg(Formatting.RED,
+                ChatUtils.sendMsg(ChatFormatting.RED,
                         "No maps selected. Middle-click maps in item frames to select them.");
                 return 0;
             }
@@ -46,13 +46,13 @@ public class ExportSelectedMaps extends Command {
             int exported = 0;
 
             for (SelectedMapEntry entry : selected.values()) {
-                MapState mapState = FilledMapItem.getMapState(entry.frame.getHeldItemStack(), mc.world);
+                MapItemSavedData mapState = MapItem.getSavedData(entry.frame.getItem(), mc.level);
                 if (mapState == null) {
-                    ChatUtils.sendMsg(Formatting.YELLOW, "Skipping " + entry.name + " (no map data available)");
+                    ChatUtils.sendMsg(ChatFormatting.YELLOW, "Skipping " + entry.name + " (no map data available)");
                     continue;
                 }
 
-                String itemName = entry.frame.getHeldItemStack().getName().getString();
+                String itemName = entry.frame.getItem().getHoverName().getString();
                 String filenameBase = (itemName == null || itemName.isEmpty()) ? sanitizedBase
                         : ExportUtils.sanitizeMapName(itemName);
 
@@ -68,12 +68,12 @@ public class ExportSelectedMaps extends Command {
                     ExportUtils.saveImageFromMapColors(mapState.colors.clone(), filename, true);
                     exported++;
                 } catch (Exception e) {
-                    ChatUtils.sendMsg(Formatting.RED, "Failed to save " + filename + ": " + e.getMessage());
+                    ChatUtils.sendMsg(ChatFormatting.RED, "Failed to save " + filename + ": " + e.getMessage());
                 }
             }
 
             module.clearSelection();
-            ChatUtils.sendMsg(Formatting.GREEN, "Exported " + exported + " map(s). Selection cleared.");
+            ChatUtils.sendMsg(ChatFormatting.GREEN, "Exported " + exported + " map(s). Selection cleared.");
             return 1;
         });
     }

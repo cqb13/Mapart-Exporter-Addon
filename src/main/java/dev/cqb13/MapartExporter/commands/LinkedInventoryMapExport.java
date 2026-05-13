@@ -10,11 +10,11 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import dev.cqb13.MapartExporter.ExportUtils;
 import meteordevelopment.meteorclient.commands.Command;
 import meteordevelopment.meteorclient.utils.player.ChatUtils;
-import net.minecraft.command.CommandSource;
-import net.minecraft.item.FilledMapItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.map.MapState;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.multiplayer.ClientSuggestionProvider;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.MapItem;
+import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 
 public class LinkedInventoryMapExport extends Command {
     public LinkedInventoryMapExport() {
@@ -22,7 +22,7 @@ public class LinkedInventoryMapExport extends Command {
     }
 
     @Override
-    public void build(LiteralArgumentBuilder<CommandSource> builder) {
+    public void build(LiteralArgumentBuilder<ClientSuggestionProvider> builder) {
         builder.then(argument("name", StringArgumentType.string())
                 .executes(context -> {
                     String baseName = ExportUtils.sanitizeMapName(context.getArgument("name", String.class));
@@ -36,12 +36,12 @@ public class LinkedInventoryMapExport extends Command {
                     int minRow = 4, maxRow = -1;
 
                     for (int slot = 0; slot < 36; slot++) {
-                        ItemStack stack = mc.player.getInventory().getStack(slot);
+                        ItemStack stack = mc.player.getInventory().getItem(slot);
 
-                        if (!(stack.getItem() instanceof FilledMapItem))
+                        if (!(stack.getItem() instanceof MapItem))
                             continue;
 
-                        MapState mapState = FilledMapItem.getMapState(stack, mc.player.getEntityWorld());
+                        MapItemSavedData mapState = MapItem.getSavedData(stack, mc.player.level());
                         if (mapState == null) {
                             continue;
                         }
@@ -73,18 +73,18 @@ public class LinkedInventoryMapExport extends Command {
                     }
 
                     if (maps.isEmpty()) {
-                        ChatUtils.sendMsg(Formatting.RED, "No maps found in inventory.");
+                        ChatUtils.sendMsg(ChatFormatting.RED, "No maps found in inventory.");
                         return 0;
                     }
 
                     try {
                         ExportUtils.saveCompositeImage(baseName, maps, true);
                     } catch (IOException e) {
-                        ChatUtils.sendMsg(Formatting.RED, "Failed to save export: " + e.getMessage());
+                        ChatUtils.sendMsg(ChatFormatting.RED, "Failed to save export: " + e.getMessage());
                         return 0;
                     }
 
-                    ChatUtils.sendMsg(Formatting.GREEN, "Export complete.");
+                    ChatUtils.sendMsg(ChatFormatting.GREEN, "Export complete.");
                     return 1;
                 }));
     }

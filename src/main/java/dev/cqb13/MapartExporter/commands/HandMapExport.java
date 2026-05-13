@@ -6,11 +6,11 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import dev.cqb13.MapartExporter.ExportUtils;
 import meteordevelopment.meteorclient.commands.Command;
 import meteordevelopment.meteorclient.utils.player.ChatUtils;
-import net.minecraft.command.CommandSource;
-import net.minecraft.item.FilledMapItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.map.MapState;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.multiplayer.ClientSuggestionProvider;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.MapItem;
+import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 
 public class HandMapExport extends Command {
     public HandMapExport() {
@@ -18,26 +18,26 @@ public class HandMapExport extends Command {
     }
 
     @Override
-    public void build(LiteralArgumentBuilder<CommandSource> builder) {
+    public void build(LiteralArgumentBuilder<ClientSuggestionProvider> builder) {
         builder.then(argument("name", StringArgumentType.string())
                 .executes(context -> {
                     String filename = context.getArgument("name", String.class);
 
-                    ItemStack itemStack = mc.player.getMainHandStack();
+                    ItemStack itemStack = mc.player.getMainHandItem();
 
-                    if (!(itemStack.getItem() instanceof FilledMapItem)) {
-                        itemStack = mc.player.getOffHandStack();
+                    if (!(itemStack.getItem() instanceof MapItem)) {
+                        itemStack = mc.player.getOffhandItem();
                     }
 
-                    if (!(itemStack.getItem() instanceof FilledMapItem)) {
-                        ChatUtils.sendMsg(Formatting.RED, "Item in hand is not a filled map");
+                    if (!(itemStack.getItem() instanceof MapItem)) {
+                        ChatUtils.sendMsg(ChatFormatting.RED, "Item in hand is not a filled map");
                         return 0;
                     }
 
-                    MapState mapState = FilledMapItem.getMapState(itemStack, mc.player.getEntityWorld());
+                    MapItemSavedData mapState = MapItem.getSavedData(itemStack, mc.player.level());
 
                     if (mapState == null) {
-                        ChatUtils.sendMsg(Formatting.RED, "Failed to get map state");
+                        ChatUtils.sendMsg(ChatFormatting.RED, "Failed to get map state");
                         return 0;
                     }
 
@@ -46,10 +46,10 @@ public class HandMapExport extends Command {
                     try {
                         ExportUtils.saveImageFromMapColors(mapColors, filename, true);
                     } catch (IllegalArgumentException e) {
-                        ChatUtils.sendMsg(Formatting.RED, "Failed to save map: " + e.getMessage());
+                        ChatUtils.sendMsg(ChatFormatting.RED, "Failed to save map: " + e.getMessage());
                     }
 
-                    ChatUtils.sendMsg(Formatting.GREEN, "Exported complete.");
+                    ChatUtils.sendMsg(ChatFormatting.GREEN, "Exported complete.");
                     return SINGLE_SUCCESS;
                 }));
     }
