@@ -14,6 +14,7 @@ Exports all the maps you have selected as either a single image or a set of indi
 
 1. Turn on the `Mapart Selector` module
 2. Middle click the maps you want to export
+    - _To select a large amount of maps at once, select the top corner of the map then select the bottom corner while holding shift_
     - _Note: If exporting connected maps only select maps part of the mapart_
 3. Export
     - If you are exporting 1x1 mapart run the `.export-selected-maps` command
