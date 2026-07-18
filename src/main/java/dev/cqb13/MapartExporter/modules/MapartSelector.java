@@ -153,6 +153,11 @@ public class MapartSelector extends Module {
             return;
         }
 
+        if (mc.options.keyShift.isDown() && !selectedMaps.isEmpty() && !selectedMaps.containsKey(mapId)) {
+            shiftClickSelect(frame, mapId, stack);
+            return;
+        }
+
         if (selectedMaps.containsKey(mapId)) {
             selectedMaps.remove(mapId);
             gridCoordsCache = null;
@@ -276,6 +281,86 @@ public class MapartSelector extends Module {
         return selectedMaps.isEmpty() ? null : String.valueOf(selectedMaps.size());
     }
 
+    private int[] getRawGridCoords(ItemFrame frame) {
+        BlockPos pos = frame.blockPosition();
+        int col, row;
+
+        switch (frame.getNearestViewDirection()) {
+            case EAST -> {
+                col = -pos.getZ();
+                row = -pos.getY();
+            }
+            case NORTH -> {
+                col = -pos.getX();
+                row = -pos.getY();
+            }
+            case WEST -> {
+                col = pos.getZ();
+                row = -pos.getY();
+            }
+            case SOUTH -> {
+                col = pos.getX();
+                row = -pos.getY();
+            }
+            case UP -> {
+                col = pos.getX();
+                row = pos.getZ();
+            }
+            case DOWN -> {
+                col = pos.getX();
+                row = -pos.getZ();
+            }
+            default -> {
+                col = pos.getX();
+                row = -pos.getY();
+            }
+        }
+
+        return new int[] { row, col };
+    }
+
+    private void shiftClickSelect(ItemFrame clickedFrame, int clickedMapId, ItemStack clickedStack) {
+        SelectedMapEntry anchor = selectedMaps.values().iterator().next();
+
+        int[] anchorCoords = getRawGridCoords(anchor.frame);
+        int[] clickCoords = getRawGridCoords(clickedFrame);
+
+        int minRow = Math.min(anchorCoords[0], clickCoords[0]);
+        int maxRow = Math.max(anchorCoords[0], clickCoords[0]);
+        int minCol = Math.min(anchorCoords[1], clickCoords[1]);
+        int maxCol = Math.max(anchorCoords[1], clickCoords[1]);
+
+        int added = 0;
+
+        for (Entity entity : mc.level.entitiesForRendering()) {
+            if (!(entity instanceof ItemFrame frame))
+                continue;
+
+            ItemStack stack = frame.getItem();
+            if (stack.isEmpty() || stack.getItem() != Items.FILLED_MAP)
+                continue;
+
+            int id = getMapId(stack);
+            if (id < 0)
+                continue;
+
+            int[] coords = getRawGridCoords(frame);
+            if (coords[0] >= minRow && coords[0] <= maxRow &&
+                    coords[1] >= minCol && coords[1] <= maxCol) {
+                if (selectedMaps.putIfAbsent(id,
+                        new SelectedMapEntry(id, stack.getHoverName().getString(), frame)) == null) {
+                    added++;
+                }
+            }
+        }
+
+        gridCoordsCache = null;
+
+        if (added > 0 && this.chatFeedback) {
+            info("Added " + added + " maps in region (" + selectedMaps.size() + " total selected)");
+        }
+    }
+
     private Map<Integer, int[]> computeGridCoordinates() {
         if (selectedMaps.isEmpty())
             return new HashMap<>();
@@ -283,41 +368,7 @@ public class MapartSelector extends Module {
         Map<Integer, int[]> result = new LinkedHashMap<>();
 
         for (SelectedMapEntry entry : selectedMaps.values()) {
-            BlockPos pos = entry.framePos;
-            int col, row;
-
-            switch (entry.frame.getNearestViewDirection()) {
-                case EAST -> {
-                    col = -pos.getZ();
-                    row = -pos.getY();
-                }
-                case NORTH -> {
-                    col = -pos.getX();
-                    row = -pos.getY();
-                }
-                case WEST -> {
-                    col = pos.getZ();
-                    row = -pos.getY();
-                }
-                case SOUTH -> {
-                    col = pos.getX();
-                    row = -pos.getY();
-                }
-                case UP -> {
-                    col = pos.getX();
-                    row = pos.getZ();
-                }
-                case DOWN -> {
-                    col = pos.getX();
-                    row = -pos.getZ();
-                }
-                default -> {
-                    col = pos.getX();
-                    row = -pos.getY();
-                }
-            }
-
-            result.put(entry.mapId, new int[] { row, col });
+            result.put(entry.mapId, getRawGridCoords(entry.frame));
         }
 
         int minRow = result.values().stream().mapToInt(v -> v[0]).min().orElse(0);
