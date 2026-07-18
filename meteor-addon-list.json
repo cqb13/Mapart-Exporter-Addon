@@ -1,3 +1,7 @@
 {
-  "tags": ["Utility", "Automation", "QoL"]
+  "tags": ["Utility", "Automation", "QoL"],
+  "feature_directories": {
+    "commands": ["commands"],
+    "modules": ["modules"]
+  }
 }
