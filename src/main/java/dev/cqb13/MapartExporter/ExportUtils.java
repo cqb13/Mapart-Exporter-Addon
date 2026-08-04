@@ -49,6 +49,33 @@ public class ExportUtils {
         }
     }
 
+    public static byte[] rotateMapColors(byte[] colors, int quarterTurns) {
+        int size = 128;
+        if (colors == null || colors.length != size * size) {
+            return colors;
+        }
+
+        quarterTurns = ((quarterTurns % 4) + 4) % 4;
+        if (quarterTurns == 0) {
+            return colors.clone();
+        }
+
+        byte[] rotated = new byte[colors.length];
+        for (int y = 0; y < size; y++) {
+            for (int x = 0; x < size; x++) {
+                int src = y * size + x;
+                int dst;
+                switch (quarterTurns) {
+                    case 1 -> dst = x * size + (size - 1 - y);
+                    case 2 -> dst = (size - 1 - y) * size + (size - 1 - x);
+                    default -> dst = (size - 1 - x) * size + y;
+                }
+                rotated[dst] = colors[src];
+            }
+        }
+        return rotated;
+    }
+
     public static NativeImage buildCompositeImage(Map<String, byte[]> maps) {
         if (maps == null || maps.isEmpty()) {
             return null;

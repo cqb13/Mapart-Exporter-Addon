@@ -65,6 +65,12 @@ public class MapartSelector extends Module {
             .defaultValue(true)
             .build());
 
+    private final Setting<Boolean> applyFrameRotation = sgGeneral.add(new BoolSetting.Builder()
+            .name("apply-frame-rotation")
+            .description("Rotate exported maps to match their orientation in item frames.")
+            .defaultValue(true)
+            .build());
+
     private final Setting<Double> nametagScale = sgGeneral.add(new DoubleSetting.Builder()
             .name("nametag-scale")
             .description("Scale of the nametag text.")
@@ -270,6 +276,10 @@ public class MapartSelector extends Module {
 
     public Map<UUID, SelectedMapEntry> getSelectedMaps() {
         return selectedMaps;
+    }
+
+    public boolean shouldApplyFrameRotation() {
+        return applyFrameRotation.get();
     }
 
     public Map<UUID, int[]> getGridCoords() {

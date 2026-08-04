@@ -60,6 +60,9 @@ public class ExportSelectedMap extends Command {
                         }
 
                         byte[] mapColors = mapState.colors.clone();
+                        if (module.shouldApplyFrameRotation()) {
+                            mapColors = ExportUtils.rotateMapColors(mapColors, entry.frame.getRotation() % 4);
+                        }
                         maps.put(coords[0] + "," + coords[1], mapColors);
                     }
 

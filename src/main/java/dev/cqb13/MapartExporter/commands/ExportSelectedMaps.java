@@ -65,8 +65,13 @@ public class ExportSelectedMaps extends Command {
                 }
                 usedNames.add(filename);
 
+                byte[] mapColors = mapState.colors.clone();
+                if (module.shouldApplyFrameRotation()) {
+                    mapColors = ExportUtils.rotateMapColors(mapColors, entry.frame.getRotation() % 4);
+                }
+
                 try {
-                    ExportUtils.saveImageFromMapColors(mapState.colors.clone(), filename, true);
+                    ExportUtils.saveImageFromMapColors(mapColors, filename, true);
                     exported++;
                 } catch (Exception e) {
                     ChatUtils.sendMsg(ChatFormatting.RED, "Failed to save " + filename + ": " + e.getMessage());
