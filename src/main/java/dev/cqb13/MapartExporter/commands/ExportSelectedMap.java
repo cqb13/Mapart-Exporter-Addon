@@ -2,6 +2,7 @@ package dev.cqb13.MapartExporter.commands;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.UUID;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -34,20 +35,20 @@ public class ExportSelectedMap extends Command {
                         return 0;
                     }
 
-                    Map<Integer, SelectedMapEntry> selected = module.getSelectedMaps();
+                    Map<UUID, SelectedMapEntry> selected = module.getSelectedMaps();
                     if (selected.isEmpty()) {
                         ChatUtils.sendMsg(ChatFormatting.RED,
                                 "No maps selected. Middle-click maps in item frames to select them.");
                         return 0;
                     }
 
-                    Map<Integer, int[]> gridCoords = module.getGridCoords();
+                    Map<UUID, int[]> gridCoords = module.getGridCoords();
                     String sanitized = ExportUtils.sanitizeMapName(baseName);
 
                     Map<String, byte[]> maps = new java.util.HashMap<>();
 
                     for (SelectedMapEntry entry : selected.values()) {
-                        int[] coords = gridCoords.get(entry.mapId);
+                        int[] coords = gridCoords.get(entry.frame.getUUID());
                         if (coords == null)
                             continue;
 

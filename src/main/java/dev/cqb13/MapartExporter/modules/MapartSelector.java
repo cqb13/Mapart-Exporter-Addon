@@ -5,6 +5,7 @@ import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_MIDDLE;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import org.joml.Vector3d;
 
@@ -98,8 +99,8 @@ public class MapartSelector extends Module {
             .visible(() -> showCoords.get() || showName.get())
             .build());
 
-    private final Map<Integer, SelectedMapEntry> selectedMaps = new LinkedHashMap<>();
-    private Map<Integer, int[]> gridCoordsCache = null;
+    private final Map<UUID, SelectedMapEntry> selectedMaps = new LinkedHashMap<>();
+    private Map<UUID, int[]> gridCoordsCache = null;
 
     public MapartSelector() {
         super(Categories.Misc, "mapart-selector",
@@ -153,20 +154,22 @@ public class MapartSelector extends Module {
             return;
         }
 
-        if (mc.options.keyShift.isDown() && !selectedMaps.isEmpty() && !selectedMaps.containsKey(mapId)) {
+        UUID frameId = frame.getUUID();
+
+        if (mc.options.keyShift.isDown() && !selectedMaps.isEmpty() && !selectedMaps.containsKey(frameId)) {
             shiftClickSelect(frame, mapId, stack);
             return;
         }
 
-        if (selectedMaps.containsKey(mapId)) {
-            selectedMaps.remove(mapId);
+        if (selectedMaps.containsKey(frameId)) {
+            selectedMaps.remove(frameId);
             gridCoordsCache = null;
 
             if (this.chatFeedback) {
                 info("Deselected map " + stack.getHoverName().getString() + " (" + selectedMaps.size() + " selected)");
             }
         } else {
-            selectedMaps.put(mapId, new SelectedMapEntry(mapId, stack.getHoverName().getString(), frame));
+            selectedMaps.put(frameId, new SelectedMapEntry(mapId, stack.getHoverName().getString(), frame));
             gridCoordsCache = null;
 
             if (this.chatFeedback) {
@@ -195,7 +198,7 @@ public class MapartSelector extends Module {
             }
 
             int mapId = getMapId(stack);
-            if (mapId < 0 || !selectedMaps.containsKey(mapId)) {
+            if (mapId < 0 || !selectedMaps.containsKey(frame.getUUID())) {
                 continue;
             }
 
@@ -210,7 +213,7 @@ public class MapartSelector extends Module {
             return;
         }
 
-        Map<Integer, int[]> gridCoords = getGridCoords();
+        Map<UUID, int[]> gridCoords = getGridCoords();
 
         for (Entity entity : mc.level.entitiesForRendering()) {
             if (!(entity instanceof ItemFrame frame)) {
@@ -223,12 +226,17 @@ public class MapartSelector extends Module {
             }
 
             int mapId = getMapId(stack);
-            if (mapId < 0 || !selectedMaps.containsKey(mapId)) {
+            if (mapId < 0) {
                 continue;
             }
 
-            SelectedMapEntry entry = selectedMaps.get(mapId);
-            int[] coords = gridCoords.get(mapId);
+            UUID frameId = frame.getUUID();
+            SelectedMapEntry entry = selectedMaps.get(frameId);
+            if (entry == null) {
+                continue;
+            }
+
+            int[] coords = gridCoords.get(frameId);
 
             StringBuilder label = new StringBuilder();
             if (showName.get()) {
@@ -260,11 +268,11 @@ public class MapartSelector extends Module {
         }
     }
 
-    public Map<Integer, SelectedMapEntry> getSelectedMaps() {
+    public Map<UUID, SelectedMapEntry> getSelectedMaps() {
         return selectedMaps;
     }
 
-    public Map<Integer, int[]> getGridCoords() {
+    public Map<UUID, int[]> getGridCoords() {
         if (gridCoordsCache == null) {
             gridCoordsCache = computeGridCoordinates();
         }
@@ -361,7 +369,7 @@ public class MapartSelector extends Module {
                     coords[1] >= minCol && coords[1] <= maxCol &&
                     coords[2] == clickCoords[2] &&
                     frame.getNearestViewDirection() == clickedFrame.getNearestViewDirection()) {
-                if (selectedMaps.putIfAbsent(id,
+                if (selectedMaps.putIfAbsent(frame.getUUID(),
                         new SelectedMapEntry(id, stack.getHoverName().getString(), frame)) == null) {
                     added++;
                 }
@@ -375,14 +383,14 @@ public class MapartSelector extends Module {
         }
     }
 
-    private Map<Integer, int[]> computeGridCoordinates() {
+    private Map<UUID, int[]> computeGridCoordinates() {
         if (selectedMaps.isEmpty())
             return new HashMap<>();
 
-        Map<Integer, int[]> result = new LinkedHashMap<>();
+        Map<UUID, int[]> result = new LinkedHashMap<>();
 
         for (SelectedMapEntry entry : selectedMaps.values()) {
-            result.put(entry.mapId, getRawGridCoords(entry.frame));
+            result.put(entry.frame.getUUID(), getRawGridCoords(entry.frame));
         }
 
         int minRow = result.values().stream().mapToInt(v -> v[0]).min().orElse(0);

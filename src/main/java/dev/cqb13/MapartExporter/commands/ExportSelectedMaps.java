@@ -3,6 +3,7 @@ package dev.cqb13.MapartExporter.commands;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 
@@ -33,7 +34,7 @@ public class ExportSelectedMaps extends Command {
                 return 0;
             }
 
-            Map<Integer, SelectedMapEntry> selected = module.getSelectedMaps();
+            Map<UUID, SelectedMapEntry> selected = module.getSelectedMaps();
             if (selected.isEmpty()) {
                 ChatUtils.sendMsg(ChatFormatting.RED,
                         "No maps selected. Middle-click maps in item frames to select them.");
