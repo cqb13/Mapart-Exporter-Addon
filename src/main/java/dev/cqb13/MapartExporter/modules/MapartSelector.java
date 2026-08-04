@@ -283,40 +283,47 @@ public class MapartSelector extends Module {
 
     private int[] getRawGridCoords(ItemFrame frame) {
         BlockPos pos = frame.blockPosition();
-        int col, row;
+        int col, row, layer;
 
         switch (frame.getNearestViewDirection()) {
             case EAST -> {
                 col = -pos.getZ();
                 row = -pos.getY();
+                layer = pos.getX();
             }
             case NORTH -> {
                 col = -pos.getX();
                 row = -pos.getY();
+                layer = pos.getZ();
             }
             case WEST -> {
                 col = pos.getZ();
                 row = -pos.getY();
+                layer = pos.getX();
             }
             case SOUTH -> {
                 col = pos.getX();
                 row = -pos.getY();
+                layer = pos.getZ();
             }
             case UP -> {
                 col = pos.getX();
                 row = pos.getZ();
+                layer = pos.getY();
             }
             case DOWN -> {
                 col = pos.getX();
                 row = -pos.getZ();
+                layer = pos.getY();
             }
             default -> {
                 col = pos.getX();
                 row = -pos.getY();
+                layer = pos.getY();
             }
         }
 
-        return new int[] { row, col };
+        return new int[] { row, col, layer };
     }
 
     private void shiftClickSelect(ItemFrame clickedFrame, int clickedMapId, ItemStack clickedStack) {
@@ -324,6 +331,11 @@ public class MapartSelector extends Module {
 
         int[] anchorCoords = getRawGridCoords(anchor.frame);
         int[] clickCoords = getRawGridCoords(clickedFrame);
+
+        if (anchorCoords[2] != clickCoords[2]
+                || anchor.frame.getNearestViewDirection() != clickedFrame.getNearestViewDirection()) {
+            return;
+        }
 
         int minRow = Math.min(anchorCoords[0], clickCoords[0]);
         int maxRow = Math.max(anchorCoords[0], clickCoords[0]);
@@ -346,7 +358,9 @@ public class MapartSelector extends Module {
 
             int[] coords = getRawGridCoords(frame);
             if (coords[0] >= minRow && coords[0] <= maxRow &&
-                    coords[1] >= minCol && coords[1] <= maxCol) {
+                    coords[1] >= minCol && coords[1] <= maxCol &&
+                    coords[2] == clickCoords[2] &&
+                    frame.getNearestViewDirection() == clickedFrame.getNearestViewDirection()) {
                 if (selectedMaps.putIfAbsent(id,
                         new SelectedMapEntry(id, stack.getHoverName().getString(), frame)) == null) {
                     added++;
