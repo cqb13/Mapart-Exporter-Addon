@@ -1,6 +1,6 @@
 package dev.cqb13.MapartExporter.modules;
 
-import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_MIDDLE;
+import static com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_MIDDLE;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -136,7 +136,7 @@ public class MapartSelector extends Module {
 
     @EventHandler
     private void onMouseClick(MouseClickEvent event) {
-        if (event.action != KeyAction.Press || event.button() != GLFW_MOUSE_BUTTON_MIDDLE || mc.screen != null) {
+        if (event.action != KeyAction.Press || event.button() != MOUSE_BUTTON_MIDDLE || mc.gui.screen() != null) {
             return;
         }
 
@@ -264,12 +264,12 @@ public class MapartSelector extends Module {
             Vector3d vec3 = new Vector3d(entity.getX(), entity.getY(), entity.getZ());
 
             if (NametagUtils.to2D(vec3, nametagScale.get())) {
-                NametagUtils.begin(vec3);
-                TextRenderer.get().begin(1, false, true);
+                NametagUtils.begin(vec3, event.graphics);
+                TextRenderer.get().begin(event.graphics, 1, false, true);
                 double w = TextRenderer.get().getWidth(text) / 2;
                 TextRenderer.get().render(text, -w, 0, nametagColor.get(), true);
                 TextRenderer.get().end();
-                NametagUtils.end();
+                NametagUtils.end(event.graphics);
             }
         }
     }
